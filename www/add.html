@@ -1,0 +1,110 @@
+﻿<!doctype html>  
+<html lang="es">  
+<head>  
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Cosumo de la luz</title>
+	<link rel="stylesheet" href="stylesheets/bootstrap.min.css">
+	<script src="js/angular.min.js"></script>
+	<script src="js/jquery.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	
+</head>  
+<body>  
+	<div data-ng-app="myApp" class='container' data-ng-controller='getLoginData'>
+	
+	
+	<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <div class="navbar-header">
+	 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar"> <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>      
+		</button>
+      <a class="navbar-brand" href="/"><img src="img/logo.svg" style="width:50px; margin-top: -7px" /></a>
+    </div>
+    <div class="collapse navbar-collapse" id="myNavbar">
+       <ul class="nav navbar-nav">
+        <li><a href="/index.html" data-ng-show="notlogged">Login</a></li>
+        <li><a href="/Registro.html" data-ng-show="notlogged">Registro</a></li>
+		 <li><a href="/add.html" data-ng-hide="notlogged">Añadir Consumo</a></li>
+        <li><a href="/listar.html" data-ng-hide="notlogged">Ver Consumos Almacenados</a></li>
+		 <li><a href="/grafico.html" data-ng-hide="notlogged">Ver gráfica</a></li>
+        <li><a data-ng-click="logOut()" data-ng-hide="notlogged">LogOut</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>		
+	<div data-ng-hide="notlogged">
+		<h3>Añade un nuevo consumo:</h3>
+
+			
+	<form class="form well" name='myform' data-ng-submit="sendPost()">
+	<fieldset>
+	<div class="form-group">
+	<input type='hidden'  class="form-control" id='name' name='name' data-ng-model='consumption.name' required/>
+	<input type='hidden'  class="form-control" id='password' name='password' data-ng-model='consumption.password' required/>
+		<label for='consumo'>Consumo:</label><br>
+		<input type='text'  class="form-control" id='consumo' name='consumo' data-ng-model='consumption.consumo' required/>
+		</div>
+		<div class="form-group">
+		<label for='precio'>Precio:</label><br>
+		<input type='text'  class="form-control" id='precio' name='precio' data-ng-model='consumption.precio' required/>
+		</div>
+		<div class="form-group">
+		<label for='fechafin'>Fecha Fin:</label><br>
+		<input type='date'  class="form-control" id='fechaFin' placeholder='AAAA-MM-01' name='fechaFin' data-ng-model='consumption.fechafin' required/>
+		</div>
+		<div class="form-group">
+		<button type='submit' class="btn btn-success form-control center-block" ng-disabled="myform.$error.required || myform.$invalid" value='Enviar' id='enviar')/>Guardar</button>
+		</div>		
+	</fieldset>
+	</form>
+	</div>   
+</div>
+	<script>
+	var app = angular.module('myApp', []);
+	
+app.controller('getLoginData', function ($scope, $http) {
+     
+	$scope.logged = false;
+	$scope.consumption;
+var loadeduser = JSON.parse(localStorage.getItem('user'));
+	
+	if (loadeduser == null)
+	{
+	$scope.notlogged = true;
+	}
+	else
+	{
+	$scope.consumption = loadeduser;
+	}
+	
+$scope.logOut = function (){
+	localStorage.removeItem('user');
+		$scope.notlogged = true;
+		$scope.user = null;
+
+};
+
+ $scope.sendPost=function(){
+ console.log('enviando')
+	// var text = document.getElementById('json').innerHTML
+	 console.log($scope.consumption)
+	 
+        $http({url:"/add",
+		 method: "POST",
+		 headers: {'Content-Type': 'application/json'},
+		data:$scope.consumption})
+		.success(function(data, status) {
+           console.log('enviado')
+        })
+}
+
+});
+	
+          
+
+</script>
+</body>  
+</html>  	

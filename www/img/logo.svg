@@ -1,0 +1,5 @@
+<svg height="200" width="200" xmlns="http://www.w3.org/2000/svg">
+  <polyline  points="30,130 40,60 80,140  120,20 140,50" style="stroke:red;stroke-width:4" />
+<text x="55" y="110" style="font-size  : 130px;
+fill: white; ">€</text>
+</svg>

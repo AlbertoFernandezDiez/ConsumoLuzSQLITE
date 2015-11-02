@@ -1,0 +1,14 @@
+{
+  "name": "Consumo_Luz",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node app.js 3000"
+  },
+  "dependencies": {
+    "body-parser": "~1.13.2",
+    "debug": "~2.2.0",
+    "express": "~4.13.1",
+	"sqlite3":"~3.1.0"
+  }
+}

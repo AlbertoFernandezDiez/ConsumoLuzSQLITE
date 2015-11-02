@@ -1,0 +1,180 @@
+﻿<!doctype html>  
+<html lang="es">  
+<head>  
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Cosumo de la luz</title>
+	<link rel="stylesheet" href="stylesheets/bootstrap.min.css">
+	<script src="js/angular.min.js"></script>
+	<script src="js/jquery.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/Chart.js"></script>
+
+	
+</head>  
+<body>  
+	<div data-ng-app="myApp" class='container' data-ng-controller='consumCtrl'>
+	
+	
+	<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <div class="navbar-header">
+	 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar"> <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>      
+		</button>
+      <a class="navbar-brand" href="/"><img src="img/logo.svg" style="width:50px; margin-top: -7px" /></a>
+    </div>
+    <div class="collapse navbar-collapse" id="myNavbar">
+      <ul class="nav navbar-nav">
+        <li><a href="/index.html" data-ng-show="notlogged">Login</a></li>
+        <li><a href="/Registro.html" data-ng-show="notlogged">Registro</a></li>
+		 <li><a href="/add.html" data-ng-hide="notlogged">Añadir Consumo</a></li>
+        <li><a href="/listar.html" data-ng-hide="notlogged">Ver Consumos Almacenados</a></li>
+		 <li><a href="/grafico.html" data-ng-hide="notlogged">Ver gráfica</a></li>
+        <li><a data-ng-click="logOut()" data-ng-hide="notlogged">LogOut</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>		
+<div data-ng-hide="notlogged">
+<h3 id='canvastitle' hidden>Revisa graficamente tus consumos anuales</h3>
+		
+	<div class="canvas-holder">
+<canvas id="canvas" height="480" width="640" hidden></canvas>
+</div>
+
+<h3 id='canvastitle2' hidden>Revisa graficamente tus consumos anuales en € </h3>
+		
+	<div class="canvas-holder">
+<canvas id="canvasPrecio" height="480" width="640" hidden></canvas>
+</div>
+	<form class='form well'data-ng-submit="loadYears()">
+	<fieldset>
+	<div class="radio" ng-repeat="x in anos">
+		<label><input type="radio" id='{{x}}' name='Ano' data-ng-model='formdata.select'  value='{{x.year}}'/>{{x.year}}</label>
+	</div>
+  <br/>
+		<button type='submit' class='btn btn-success center-block form-control' value='Enviar' id='enviar')/>Enviar</button>
+	</fieldset>
+	</form>
+	
+	</div>   
+</div>
+
+
+    
+	
+	<script>
+var app = angular.module('myApp', []);
+var selectedYears = [];
+
+
+
+	 
+
+app.controller('consumCtrl', function($scope, $http) {
+		
+	var loadeduser = JSON.parse(localStorage.getItem('user'));
+	
+	if (loadeduser == null)
+	{
+	$scope.notlogged = true;
+	}
+	else
+	{
+	$scope.user = loadeduser;
+	console.log('Usuario iniciado')
+	}
+		
+	$http({url:"/listarAno",
+		 method: "POST",
+		 headers: {'Content-Type': 'application/json'},
+		data:JSON.stringify($scope.user)})
+		.success(function(data, status) {
+            $scope.anos = data;
+        });
+	
+   /* $http.get("/listarAno")
+    .success(function(response) {$scope.anos = response;
+	 $scope.select = {
+    anos: ['user']
+  }
+  });*/
+	$scope.logOut = function (){
+	localStorage.removeItem('user');
+		$scope.notlogged = true;
+		$scope.user = null;
+
+};
+	
+	$scope.loadYears = function(){
+	var selects = document.getElementsByName('Ano');
+	
+	for (var i = 0; i < selects.length; i++)
+	{
+	console.log(selects[i])
+	if (selects[i].checked)
+		selectedYears.push(selects[i].value)
+	}
+	this.user.year=selectedYears.pop();
+	console.log(this.user);
+	$http({url:"/getAnos",
+		 method: "POST",
+		 headers: {'Content-Type': 'application/json'},
+		data:JSON.stringify(this.user)})
+		.success(function(data, status) {
+		selectedYears = [];
+           console.log('data')
+	
+
+	var Chardata = {labels: [],datasets: []};
+	var datasets = {label: "",
+			fillColor: "rgba(220,220,220,0.2)",
+			strokeColor: "rgba(25, 100, 100,1)",
+			pointColor: "rgba(220,0,0,1)",
+			pointStrokeColor: "#fff",
+			pointHighlightFill: "#fff",
+			pointHighlightStroke: "rgba(220,220,220,1)",
+			data: []}
+	var Chardata2 = {labels: [],datasets: []};
+	var datasets2 = {label: "",
+			fillColor: "rgba(220,220,220,0.2)",
+			strokeColor: "rgba(25, 100, 100,1)",
+			pointColor: "rgba(220,0,0,1)",
+			pointStrokeColor: "#fff",
+			pointHighlightFill: "#fff",
+			pointHighlightStroke: "rgba(220,220,220,1)",
+			data: []}
+	for (var json of data){
+	Chardata.labels.push(new Date(json.endingdate).toLocaleDateString());
+	datasets.label = json.year;
+	datasets.data.push(json.consumption*json.price);
+	Chardata2.labels.push(new Date(json.endingdate).toLocaleDateString());
+	datasets2.label = json.year;
+	datasets2.data.push(json.consumption);
+	}
+	Chardata.datasets.push(datasets);
+	Chardata2.datasets.push(datasets2);
+	
+document.getElementById("canvas").removeAttribute('hidden');
+document.getElementById("canvastitle").removeAttribute('hidden');
+		   var ctx = document.getElementById("canvas").getContext("2d");
+		window.myLine = new Chart(ctx).Line(Chardata, {
+			responsive: true
+		});
+		
+document.getElementById("canvasPrecio").removeAttribute('hidden');
+document.getElementById("canvastitle2").removeAttribute('hidden');
+		 var ctx2 = document.getElementById("canvasPrecio").getContext("2d");
+		window.myLine = new Chart(ctx2).Line(Chardata2, {
+			responsive: true
+		});
+        })
+	}
+});
+
+
+	</script>
+</body>  
+</html>  	

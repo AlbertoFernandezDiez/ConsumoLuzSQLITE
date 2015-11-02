@@ -1,0 +1,109 @@
+﻿<!doctype html>  
+<html lang="es">  
+<head>  
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Nevera</title>
+	<link rel="stylesheet" href="stylesheets/bootstrap.min.css">
+	<script src="js/angular.min.js"></script>
+	<script src="js/jquery.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	
+</head>  
+<body>  
+	<div data-ng-app="myApp" class='container' data-ng-controller='getLoginData'>
+	
+	
+	<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <div class="navbar-header">
+	 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar"> <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>      
+		</button>
+      <a class="navbar-brand" href="/"><img src="img/logo.svg" style="width:50px; margin-top: -7px" /></a>
+    </div>
+    <div class="collapse navbar-collapse" id="myNavbar">
+      <ul class="nav navbar-nav">
+        <li><a href="/index.html" data-ng-show="notlogged">Login</a></li>
+        <li><a href="/Registro.html" data-ng-show="notlogged">Registro</a></li>
+		 <li><a href="/add.html" data-ng-hide="notlogged">Añadir Consumo</a></li>
+        <li><a href="/listar.html" data-ng-hide="notlogged">Ver Consumos Almacenados</a></li>
+		 <li><a href="/grafico.html" data-ng-hide="notlogged">Ver gráfica</a></li>
+        <li><a data-ng-click="logOut()" data-ng-hide="notlogged">LogOut</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>		
+
+		
+
+			
+	<form class="form well" data-ng-show="notlogged"  name='myform' data-ng-submit="sendPost()">
+	<h3>Inicia sesión:</h3>
+	<fieldset>
+	<div class="form-group">
+		<label for='consumo'>Nombre:</label><br>
+		<input type='text'  class="form-control" id='name' name='name' ng-model='user.name' required/>
+		</div>
+		<div class="form-group">
+		<label for='password'>Contraseña:</label><br>
+		<input type='password'  class="form-control" id='password' name='password' ng-model="user.password" required/>
+		</div>
+	
+		<div class="form-group">
+		<button  data-ng-click="login()" class="btn btn-success form-control center-block" ng-disabled="myform.$error.required" value='Enviar' id='enviar')/>Identificarse</button>
+		</div>		
+	</fieldset>
+	</form>
+	
+	<div class=" well" data-ng-hide="notlogged">
+	<center><h1>Bienvenido {{user.name}}</h1></center>
+	<img src="img/logo.svg" />
+	</div>   
+	</div>   
+	
+	
+
+	<script>
+	var app = angular.module('myApp', [])
+app.controller('getLoginData', function ($scope, $http) {
+     
+	$scope.logged = false;
+	$scope.user;
+var loadeduser = JSON.parse(localStorage.getItem('user'));
+	
+	if (loadeduser == null)
+	{
+	$scope.notlogged = true;
+	}
+	else
+	{
+	$scope.user = loadeduser;
+	}
+	
+$scope.login = function (){
+$http({url:"/LogIn",
+		 method: "POST",
+		 headers: {'Content-Type': 'application/json'},
+		data:JSON.stringify($scope.user)})
+		.success(function(data, status) {
+           if (data)
+		   {
+			localStorage.setItem('user',JSON.stringify($scope.user));
+			$scope.notlogged = false;
+			}
+        })
+
+};
+
+$scope.logOut = function (){
+	localStorage.removeItem('user');
+		$scope.notlogged = true;
+		$scope.user = null;
+
+};
+});
+	</script>
+</body>  
+</html>  	
